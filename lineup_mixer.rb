@@ -151,6 +151,7 @@ class GameBuilder
       1.upto(@settings.total_innings) do |inn_idx|
         header << "Inning #{inn_idx}"
       end
+      file.puts("Game #{game_id}")
       file.puts(header.join(','))
       players.sort { |a, b| a.batting_pos <=> b.batting_pos }.each do |p|
         file.puts(p.to_s)
