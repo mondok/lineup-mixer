@@ -9,7 +9,7 @@ settings = YAML.load_file('settings.yml')
 @total_games = settings['total_games'] || 16
 @max_mixups = settings['overlap_allowance'] || 9
 @file_folder = settings['output_folder'].chomp('/')
-$total_innings = settings['innings_per_game'] || 9
+@total_innings = settings['innings_per_game'] || 9
 
 class Game
   attr_accessor :innings
@@ -37,17 +37,23 @@ class PlayerForGame
 
   attr_accessor :batting_pos
 
-  def initialize
-    class << self
-      1.upto($total_innings) do |i|
-        attr_accessor("inning_#{i}")
+  def initialize(total_innings)
+    @total_innings = total_innings
+    1.upto(total_innings) do |i|
+      varname = "inning_#{i}"
+      define_singleton_method(varname) do
+        instance_variable_get("@#{varname}")
+      end
+
+      define_singleton_method("#{varname}=") do |x|
+        instance_variable_set("@#{varname}", x)
       end
     end
   end
 
   def to_s
     arr = [@batting_pos, @name]
-    1.upto($total_innings) do |i|
+    1.upto(@total_innings) do |i|
       val = send("inning_#{i}")
       arr << val
     end
@@ -68,7 +74,7 @@ def games_list
   games = []
   0.upto(@total_games) do |g|
     game = Game.new
-    inn_max = $total_innings
+    inn_max = @total_innings
     1.upto(inn_max) do |i|
       taken_positions = []
       inning = Inning.new
@@ -97,7 +103,7 @@ def write_games_to_disk(games)
   games.each_with_index do |g, i|
     players = []
     @kids.rotate(i*-1).each_with_index do |k, ki|
-      p = PlayerForGame.new
+      p = PlayerForGame.new(@total_innings)
       p.batting_pos = ki + 1
       p.name = k
       g.innings.each_with_index do |inning, index|
@@ -108,7 +114,7 @@ def write_games_to_disk(games)
     end
     File.open("#{@file_folder}/game_#{i+1}.csv", 'w') do |file|
       header = ['Batting Order', 'Player']
-      1.upto($total_innings) do |inn_idx|
+      1.upto(@total_innings) do |inn_idx|
         header << "Inning #{inn_idx}"
       end
       file.puts(header.join(','))
