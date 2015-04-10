@@ -26,6 +26,7 @@ end
 
 class Inning
   attr_accessor :positions
+
   def initialize
     @positions = []
   end
@@ -57,7 +58,7 @@ end
 def positions_for_kid(kid, innings)
   pos = []
   innings.each do |i|
-    pos = pos + i.positions.select{|p| p.player == kid}.map{|p| p.position_name}
+    pos = pos + i.positions.select { |p| p.player == kid }.map { |p| p.position_name }
   end
   pos.flatten
 end
@@ -73,7 +74,7 @@ def games_list
       inning = Inning.new
       @kids.shuffle.each do |kid|
         takens = taken_positions + positions_for_kid(kid, game.innings)
-        available = @positions.select{|p| !takens.include?(p)}
+        available = @positions.select { |p| !takens.include?(p) }
         pos = available.sample
         if !pos
           pos = (@positions - taken_positions).shuffle.first
@@ -100,7 +101,7 @@ def write_games_to_disk(games)
       p.batting_pos = ki + 1
       p.name = k
       g.innings.each_with_index do |inning, index|
-        pos = inning.positions.select{|x| x.player == p.name}.first.position_name
+        pos = inning.positions.select { |x| x.player == p.name }.first.position_name
         p.send(:"inning_#{index+1}=", pos)
       end
       players << p
@@ -111,7 +112,7 @@ def write_games_to_disk(games)
         header << "Inning #{inn_idx}"
       end
       file.puts(header.join(','))
-      players.sort{|a,b| a.batting_pos <=> b.batting_pos}.each do |p|
+      players.sort { |a, b| a.batting_pos <=> b.batting_pos }.each do |p|
         file.puts(p.to_s)
       end
     end
