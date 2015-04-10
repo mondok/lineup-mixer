@@ -26,6 +26,10 @@ end
 class Position
   attr_accessor :player
   attr_accessor :position_name
+
+  def initialize
+    yield self if block_given?
+  end
 end
 
 class Inning
@@ -42,6 +46,8 @@ class PlayerForGame
   attr_accessor :batting_pos
 
   def initialize(total_innings)
+    yield self if block_given?
+
     @total_innings = total_innings
     1.upto(@total_innings) do |i|
       varname = "inning_#{i}"
@@ -93,25 +99,25 @@ class GameBuilder
   def games_list
     mixups = 0
     games  = []
-    0.upto(@settings.total_games) do |g|
-      game    = Game.new
-      inn_max = @settings.total_innings
-      1.upto(inn_max) do |i|
+    1.upto(@settings.total_games) do |g|
+      game = Game.new
+      1.upto(@settings.total_innings) do
         taken_positions = []
         inning          = Inning.new
         @settings.kids.shuffle.each do |kid|
-          takens    = taken_positions + positions_for_kid(kid, game.innings)
-          available = @settings.positions.select { |p| !takens.include?(p) }
-          pos       = available.sample
-          if !pos
-            pos    = (@settings.positions - taken_positions).shuffle.first
-            mixups += 1
+          taken_tmp      = taken_positions + positions_for_kid(kid, game.innings)
+          available      = @settings.positions.select { |p| !taken_tmp.include?(p) }
+          found_position = available.sample
+          if !found_position
+            found_position = (@settings.positions - taken_positions).shuffle.first
+            mixups         += 1
           end
-          position               = Position.new
-          position.player        = kid
-          position.position_name = pos
+          position = Position.new do |p|
+            p.player        = kid
+            p.position_name = found_position
+          end
           inning.positions << position
-          taken_positions << pos
+          taken_positions << found_position
         end
         game.innings << inning
       end
@@ -124,21 +130,23 @@ class GameBuilder
     games.each_with_index do |g, i|
       players = []
       @settings.kids.rotate(i*-1).each_with_index do |k, ki|
-        p             = PlayerForGame.new(@settings.total_innings)
-        p.batting_pos = ki + 1
-        p.name        = k
+        p = PlayerForGame.new(@settings.total_innings) do |ply|
+          ply.batting_pos = ki + 1
+          ply.name        = k
+        end
+
         g.innings.each_with_index do |inning, index|
           pos = inning.positions.select { |x| x.player == p.name }.first.position_name
           p.send(:"inning_#{index+1}=", pos)
         end
         players << p
       end
-      write_to_disk(players)
+      write_to_disk(players, i+1)
     end
   end
 
-  def write_to_disk(players)
-    File.open("#{@settings.file_folder}/game_#{i+1}.csv", 'w') do |file|
+  def write_to_disk(players, game_id)
+    File.open("#{@settings.file_folder}/game_#{game_id}.csv", 'w') do |file|
       header = ['Batting Order', 'Player']
       1.upto(@settings.total_innings) do |inn_idx|
         header << "Inning #{inn_idx}"
