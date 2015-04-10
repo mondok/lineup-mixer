@@ -74,7 +74,7 @@ class GameBuilder
     loop do
       mixups, games = games_list
       if mixups < @settings.max_mixups
-        write_games_to_disk(games)
+        save(games)
         puts "TOTAL MIXUPS #{mixups}"
         break
       end
@@ -120,7 +120,7 @@ class GameBuilder
     return mixups, games
   end
 
-  def write_games_to_disk(games)
+  def save(games)
     games.each_with_index do |g, i|
       players = []
       @settings.kids.rotate(i*-1).each_with_index do |k, ki|
@@ -133,15 +133,19 @@ class GameBuilder
         end
         players << p
       end
-      File.open("#{@settings.file_folder}/game_#{i+1}.csv", 'w') do |file|
-        header = ['Batting Order', 'Player']
-        1.upto(@settings.total_innings) do |inn_idx|
-          header << "Inning #{inn_idx}"
-        end
-        file.puts(header.join(','))
-        players.sort { |a, b| a.batting_pos <=> b.batting_pos }.each do |p|
-          file.puts(p.to_s)
-        end
+      write_to_disk(players)
+    end
+  end
+
+  def write_to_disk(players)
+    File.open("#{@settings.file_folder}/game_#{i+1}.csv", 'w') do |file|
+      header = ['Batting Order', 'Player']
+      1.upto(@settings.total_innings) do |inn_idx|
+        header << "Inning #{inn_idx}"
+      end
+      file.puts(header.join(','))
+      players.sort { |a, b| a.batting_pos <=> b.batting_pos }.each do |p|
+        file.puts(p.to_s)
       end
     end
   end
