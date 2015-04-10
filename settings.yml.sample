@@ -1,0 +1,6 @@
+players: Player1,Player2,Player3,Player4,Player5,Player6,Player7,Player8,Player9
+positions: C,P,1B,2B,3B,SS,LF,RF,CF
+total_games: 16
+overlap_allowance: 9
+output_folder: /Users/myaccount/lineups
+innings_per_game: 6
