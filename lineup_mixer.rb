@@ -81,7 +81,7 @@ class GameBuilder
       mixups, games = games_list
       if mixups < @settings.max_mixups
         save(games)
-        puts "TOTAL MIXUPS #{mixups}"
+        puts "Total overlap errors are #{mixups}"
         break
       end
     end
@@ -147,7 +147,7 @@ class GameBuilder
 
   def write_to_disk(players, game_id)
     File.open("#{@settings.file_folder}/game_#{game_id}.csv", 'w') do |file|
-      header = ['Batting Order', 'Player']
+      header = ['Order', 'Player']
       1.upto(@settings.total_innings) do |inn_idx|
         header << "Inning #{inn_idx}"
       end
