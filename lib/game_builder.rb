@@ -7,7 +7,7 @@ class GameBuilder
     loop do
       mixups, games = games_list
       if mixups < @settings.max_mixups
-        save(games)
+        save!(games)
         puts "Total overlap errors are #{mixups}"
         break
       end
@@ -53,7 +53,7 @@ class GameBuilder
     return mixups, games
   end
 
-  def save(games)
+  def save!(games)
     games.each_with_index do |g, i|
       players = []
       @settings.players.rotate(i*-1).each_with_index do |k, ki|
@@ -68,11 +68,11 @@ class GameBuilder
         end
         players << p
       end
-      write_to_disk(players, i+1)
+      write_to_disk!(players, i+1)
     end
   end
 
-  def write_to_disk(players, game_id)
+  def write_to_disk!(players, game_id)
     File.open("#{@settings.file_folder}/game_#{game_id}.csv", 'w') do |file|
       header = ['Order', 'Player']
       1.upto(@settings.total_innings) do |inn_idx|
