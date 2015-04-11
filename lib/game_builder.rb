@@ -15,10 +15,10 @@ class GameBuilder
   end
 
   private
-  def positions_for_kid(kid, innings)
+  def positions_for_player(player, innings)
     pos = []
     innings.each do |i|
-      pos = pos + i.positions.select { |p| p.player == kid }.map { |p| p.position_name }
+      pos = pos + i.positions.select { |p| p.player == player }.map { |p| p.position_name }
     end
     pos.flatten
   end
@@ -31,8 +31,8 @@ class GameBuilder
       1.upto(@settings.total_innings) do
         taken_positions = []
         inning          = Inning.new
-        @settings.kids.shuffle.each do |kid|
-          taken_tmp      = taken_positions + positions_for_kid(kid, game.innings)
+        @settings.players.shuffle.each do |player|
+          taken_tmp      = taken_positions + positions_for_player(player, game.innings)
           available      = @settings.positions.select { |p| !taken_tmp.include?(p) }
           found_position = available.sample
           if !found_position
@@ -40,7 +40,7 @@ class GameBuilder
             mixups         += 1
           end
           position = Position.new do |p|
-            p.player        = kid
+            p.player        = player
             p.position_name = found_position
           end
           inning.positions << position
@@ -56,7 +56,7 @@ class GameBuilder
   def save(games)
     games.each_with_index do |g, i|
       players = []
-      @settings.kids.rotate(i*-1).each_with_index do |k, ki|
+      @settings.players.rotate(i*-1).each_with_index do |k, ki|
         p = PlayerForGame.new(@settings.total_innings) do |ply|
           ply.batting_pos = ki + 1
           ply.name        = k
