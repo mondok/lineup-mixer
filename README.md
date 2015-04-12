@@ -5,6 +5,7 @@ Lineup Mixer is a Ruby script that will automatically generate random batting li
 Copy the `settings.yml.sample` to `settings.yml` and fill in the values.  One thing to note is the `overlap_allowance` variable:  this variable is basically the allowable error rate, which means over the course of n games, a child may have to play a position twice in one game.
 
 To run:
+
     ruby lineup_mixer.rb
 
 This will create n CSV files in the specified output_folder directory.
